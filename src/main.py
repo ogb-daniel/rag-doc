@@ -1,0 +1,25 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from src.core.config import settings
+from src.core.logging import setup_logging
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Startup: Checking connections...")
+    yield
+    print("Shutdown: Closing connections...")
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
+)
+
+@app.get('/health')
+async def health_check():
+    return {
+        "status": "healthy",
+        "app": settings.PROJECT_NAME,
+        "database": "checked_in_lifespan"
+    }
