@@ -1,5 +1,5 @@
 [project]
-name = "project1"
+name = "rag-platform"
 version = "0.1.0"
 description = "Multi-LLM RAG Backend"
 authors = [
@@ -21,7 +21,7 @@ dependencies = [
 
 [tool.poetry]
 # This section is now only for Poetry-specific behavior
-package-mode = true
+package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
