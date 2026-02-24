@@ -4,6 +4,9 @@ from typing import Any, AsyncIterator
 from fastapi import FastAPI
 
 from src.core.config import settings
+from src.core.logging import setup_logging
+
+setup_logging()
 
 
 @asynccontextmanager
