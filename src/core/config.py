@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    OPENAI_API_KEY: str = ""
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
+
+    QDRANT_COLLECTION_NAME: str = "documents"
+
+    UPLOAD_DIR: str = "./uploads"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
