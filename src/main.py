@@ -3,6 +3,7 @@ from typing import Any, AsyncIterator
 
 from fastapi import FastAPI
 
+from src.api.v1.api import api_router
 from src.core.config import settings
 from src.core.logging import setup_logging
 
@@ -17,6 +18,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
+
+app.include_router(api_router)
 
 
 @app.get("/health")
