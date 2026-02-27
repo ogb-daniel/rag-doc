@@ -41,3 +41,25 @@ class QdrantService:
         ]
         self.client.upsert(collection_name=self.collection_name, points=points)
         logger.info(f"Upserted {len(points)} vectors for document {document_id}")
+
+    def search(self, query_vector: list[float], top_k: int = 5) -> list[dict[str, Any]]:
+        results = self.client.query_points(collection_name=self.collection_name, query=query_vector, limit=top_k)
+        return [
+            {
+                "text": point.payload.get("text", ""),
+                "document_id": point.payload.get("document_id"),
+                "score": point.score,
+            }
+            for point in results.points
+        ]
+
+    def delete_by_document_id(self, document_id: uuid.UUID) -> None:
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=Filter(must=[FieldCondition(key="document_id", match=MatchValue(value=str(document_id)))]),
+        )
+
+
+qdrant_service = QdrantService()
