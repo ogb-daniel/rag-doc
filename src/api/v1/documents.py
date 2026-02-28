@@ -1,7 +1,9 @@
 import os
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import get_current_user
@@ -9,7 +11,7 @@ from src.core.config import settings
 from src.core.database import get_db
 from src.models.document import Document
 from src.models.user import User
-from src.schemas.document import DocumentResponse
+from src.schemas.document import DocumentListResponse, DocumentResponse
 from src.services.ingestion_service import process_document
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -44,4 +46,29 @@ async def upload_document(
 
     await process_document(document.id, db)
     await db.refresh(document)
+    return document
+
+
+@router.get("/", response_model=DocumentListResponse)
+async def list_documents(
+    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+) -> dict[str, Any]:
+    result = await db.execute(select(Document).where(Document.user_id == current_user.id))
+    documents = result.scalars().all()
+
+    count_result = await db.execute(
+        select(func.count()).select_from(Document).where(Document.user_id == current_user.id)
+    )
+    total = count_result.scalar() or 0
+    return {"documents": list(documents), "total": total}
+
+
+@router.get("/{document_id}", response_model=DocumentResponse)
+async def get_document(
+    document_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+) -> Document:
+    result = await db.execute(select(Document).where(Document.id == document_id, Document.user_id == current_user.id))
+    document = result.scalar_one_or_none()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
     return document
