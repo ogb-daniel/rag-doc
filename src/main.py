@@ -6,13 +6,16 @@ from fastapi import FastAPI
 from src.api.v1.api import api_router
 from src.core.config import settings
 from src.core.logging import setup_logging
+from src.services.qdrant_service import qdrant_service
 
 setup_logging()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    print("Startup: Checking connections...")
+    qdrant_service.ensure_collection()
+
+    print("Startup: Qdrant collection ready")
     yield
     print("Shutdown: Closing connections...")
 
