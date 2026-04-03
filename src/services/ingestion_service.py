@@ -65,3 +65,4 @@ async def process_document(document_id: uuid.UUID, db: AsyncSession) -> None:
         document.status = DocumentStatus.FAILED
         document.error_message = str(e)
         await db.commit()
+        raise
