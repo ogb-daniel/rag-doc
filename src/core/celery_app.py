@@ -6,6 +6,7 @@ celery_app = Celery(
     "rag_worker",
     broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0",
     backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/1",
+    include=["src.tasks.document_tasks"],
 )
 
 celery_app.conf.update(
