@@ -12,7 +12,7 @@ from src.core.database import get_db
 from src.models.document import Document
 from src.models.user import User
 from src.schemas.document import DocumentListResponse, DocumentResponse
-from src.services.ingestion_service import process_document
+from src.tasks.document_tasks import process_document_task
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -44,7 +44,7 @@ async def upload_document(
     await db.commit()
     await db.refresh(document)
 
-    await process_document(document.id, db)
+    process_document_task.delay(str(document.id))
     await db.refresh(document)
     return document
 
