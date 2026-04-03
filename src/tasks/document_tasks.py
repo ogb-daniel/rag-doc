@@ -4,16 +4,24 @@ import uuid
 from typing import Any
 
 from src.core.celery_app import celery_app
-from src.core.database import AsyncSessionLocal
 from src.services.ingestion_service import process_document
 
 logger = logging.getLogger(__name__)
 
 
 async def _run_async_ingestion(document_id: str) -> None:
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from sqlalchemy.pool import NullPool
+
+    from src.core.config import settings
+
     doc_uuid = uuid.UUID(document_id)
-    async with AsyncSessionLocal() as db:
+
+    local_engine = create_async_engine(settings.DATABASE_URL, poolclass=NullPool)
+    LocalSession = async_sessionmaker(bind=local_engine, expire_on_commit=False)
+    async with LocalSession() as db:
         await process_document(doc_uuid, db)
+    await local_engine.dispose()
 
 
 @celery_app.task(
