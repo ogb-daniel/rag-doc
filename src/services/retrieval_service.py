@@ -19,9 +19,9 @@ class RetrievalService:
             for i, res in enumerate(results):
                 score = res.get("score", 0)
                 text = res.get("text", "")
-
-                if score > 0.70:
-                    formatted_context += f"--- Excerpt {i+1} (Relevance: {score:.2f}) ---\n{text}\n\n"
+                # print(text, score)
+                # if score > 0.70:
+                formatted_context += f"--- Excerpt {i+1} (Relevance: {score:.2f}) ---\n{text}\n\n"
             logger.info(f"Retrieved {len(results)} chunks, fused into context.")
             return formatted_context.strip()
         except Exception:
