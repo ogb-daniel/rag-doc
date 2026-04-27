@@ -10,6 +10,7 @@ from src.schemas.chat import ChatEndpointResponse, ChatRequest
 from src.services.llm.base import ChatMessage
 from src.services.llm.router import llm_router
 from src.services.retrieval_service import retrieval_service
+from src.tasks.chat_tasks import summarize_conversation_task
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -58,6 +59,9 @@ async def chat_interaction(
             system_prompt += f"\n\nContext:\n<context>\n{context}\n</context>"
             context_injected = True
 
+    if conversation.summary:
+        system_prompt += f"\n\nPast Conversation Summary: {conversation.summary}"
+
     messages_for_llm = [ChatMessage(role="system", content=system_prompt)]
 
     for db_msg in db_messages:
@@ -75,6 +79,8 @@ async def chat_interaction(
     db.add(new_assistant_msg)
 
     await db.commit()
+    if len(db_messages) + 2 >= 10:
+        summarize_conversation_task.delay(str(conversation.id))
     return ChatEndpointResponse(
         answer=response.content,
         model_used=response.model_used,
