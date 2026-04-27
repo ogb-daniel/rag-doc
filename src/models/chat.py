@@ -14,7 +14,7 @@ class Conversation(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title: Mapped[str] = mapped_column(String, default="New Conversation")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     messages: Mapped[list["Message"]] = relationship(
         "Message", back_populates="conversation", cascade="all, delete-orphan", order_by="Message.created_at"
     )
