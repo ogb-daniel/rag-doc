@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from src.services.embedding_service import embedding_service
 from src.services.qdrant_service import qdrant_service
@@ -7,11 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
-    async def retrieve_context(self, query: str, top_k: int = 5) -> str:
+    async def retrieve_context(self, query: str, user_id: uuid.UUID, top_k: int = 5) -> str:
         logger.info(f"Retrieving context for query: '{query}'")
         try:
             query_vector = await embedding_service.embed_query(query)
-            results = qdrant_service.search(query_vector=query_vector, top_k=top_k)
+            results = qdrant_service.search(query_vector=query_vector, top_k=top_k, user_id=user_id)
             if not results:
                 logger.info("No relevant context found.")
                 return ""

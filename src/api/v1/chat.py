@@ -54,7 +54,7 @@ async def chat_interaction(
     context_injected = False
 
     if request.use_rag:
-        context = await retrieval_service.retrieve_context(query=request.query)
+        context = await retrieval_service.retrieve_context(query=request.query, user_id=current_user.id)
         if context:
             system_prompt += f"\n\nContext:\n<context>\n{context}\n</context>"
             context_injected = True

@@ -53,6 +53,7 @@ async def process_document(document_id: uuid.UUID, db: AsyncSession) -> None:
             texts=chunks,
             document_id=document.id,
             metadatas=[{"chunk_index": i, "filename": document.filename} for i in range(len(chunks))],
+            user_id=document.user_id,
         )
 
         document.status = DocumentStatus.INDEXED

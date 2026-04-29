@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Any
 
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from src.core.config import settings
@@ -29,21 +29,34 @@ class QdrantService:
         vectors: list[list[float]],
         texts: list[str],
         document_id: uuid.UUID,
+        user_id: uuid.UUID,
         metadatas: list[dict[str, Any]] | None = None,
     ) -> None:
         points = [
             PointStruct(
                 id=str(uuid.uuid4()),
                 vector=vector,
-                payload={"text": text, "document_id": str(document_id), **(metadatas[i] if metadatas else {})},
+                payload={
+                    "user_id": str(user_id),
+                    "text": text,
+                    "document_id": str(document_id),
+                    **(metadatas[i] if metadatas else {}),
+                },
             )
             for i, (vector, text) in enumerate(zip(vectors, texts, strict=False))
         ]
         self.client.upsert(collection_name=self.collection_name, points=points)
         logger.info(f"Upserted {len(points)} vectors for document {document_id}")
 
-    def search(self, query_vector: list[float], top_k: int = 5) -> list[dict[str, Any]]:
-        results = self.client.query_points(collection_name=self.collection_name, query=query_vector, limit=top_k)
+    def search(self, query_vector: list[float], user_id: uuid.UUID, top_k: int = 5) -> list[dict[str, Any]]:
+        results = self.client.query_points(
+            collection_name=self.collection_name,
+            query=query_vector,
+            limit=top_k,
+            query_filter=models.Filter(
+                must=[models.FieldCondition(key="user_id", match=models.MatchValue(value=user_id))]
+            ),
+        )
         return [
             {
                 "text": point.payload.get("text", ""),
