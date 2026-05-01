@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_current_user
+from src.api.deps import get_auth_user
 from src.core.database import get_db
 from src.models.chat import Conversation, Message
 from src.models.user import User
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 @router.post("/", response_model=ChatEndpointResponse)
 async def chat_interaction(
     request: ChatRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_auth_user),
     db: AsyncSession = Depends(get_db),
 ) -> ChatEndpointResponse:
     if request.conversation_id:
