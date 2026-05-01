@@ -7,6 +7,7 @@ import redis.asyncio as redis
 from langchain_openai import OpenAIEmbeddings
 
 from src.core.config import settings
+from src.core.metrics import embedding_cache_total
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,12 @@ class EmbeddingService:
 
         cached_result = await cache_redis.get(cache_key)
         if cached_result:
+            embedding_cache_total.add(1, {"result": "hit"})
             logger.info("Cache HIT for embedding query")
             return json.loads(cached_result)
+
+        embedding_cache_total.add(1, {"result": "miss"})
+
         logger.info("Cache MISS: Calling OpenAI for embedding query")
 
         vector = await self.embeddings.aembed_query(query)
