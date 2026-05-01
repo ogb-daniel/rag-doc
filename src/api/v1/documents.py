@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_current_user
+from src.api.deps import get_auth_user
 from src.core.config import settings
 from src.core.database import get_db
 from src.models.document import Document
@@ -21,7 +21,7 @@ ALLOWED_TYPES = {"text/plain", "text/markdown", "application/pdf"}
 
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(
-    file: UploadFile, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+    file: UploadFile, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_auth_user)
 ) -> Document:
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.content_type}")
@@ -51,7 +51,7 @@ async def upload_document(
 
 @router.get("/", response_model=DocumentListResponse)
 async def list_documents(
-    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_auth_user)
 ) -> dict[str, Any]:
     result = await db.execute(select(Document).where(Document.user_id == current_user.id))
     documents = result.scalars().all()
@@ -65,7 +65,7 @@ async def list_documents(
 
 @router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
-    document_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
+    document_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_auth_user)
 ) -> Document:
     result = await db.execute(select(Document).where(Document.id == document_id, Document.user_id == current_user.id))
     document = result.scalar_one_or_none()
