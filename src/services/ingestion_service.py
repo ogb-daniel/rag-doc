@@ -30,7 +30,8 @@ async def process_document(document_id: uuid.UUID, db: AsyncSession) -> None:
     try:
         document.status = DocumentStatus.PROCESSING
         await db.commit()
-        if document.content_type == "application/pdf":
+        file_path = str(document.file_path)
+        if document.content_type == "application/pdf" or file_path.lower().endswith(".pdf"):
             loader = PyPDFLoader(document.file_path)
         else:
             loader = TextLoader(document.file_path)

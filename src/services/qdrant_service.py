@@ -54,7 +54,7 @@ class QdrantService:
             query=query_vector,
             limit=top_k,
             query_filter=models.Filter(
-                must=[models.FieldCondition(key="user_id", match=models.MatchValue(value=user_id))]
+                must=[models.FieldCondition(key="user_id", match=models.MatchValue(value=str(user_id)))]
             ),
         )
         return [
