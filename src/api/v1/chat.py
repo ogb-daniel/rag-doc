@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import get_auth_user
 from src.core.database import get_db
+from src.core.limiter import rate_limit_dependency
 from src.models.chat import Conversation, Message
 from src.models.user import User
 from src.schemas.chat import ChatEndpointResponse, ChatRequest
@@ -15,12 +16,18 @@ from src.tasks.chat_tasks import summarize_conversation_task
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
-@router.post("/", response_model=ChatEndpointResponse)
+@router.post("/", response_model=ChatEndpointResponse, dependencies=[Depends(rate_limit_dependency)])
 async def chat_interaction(
     request: ChatRequest,
     current_user: User = Depends(get_auth_user),
     db: AsyncSession = Depends(get_db),
 ) -> ChatEndpointResponse:
+    # return ChatEndpointResponse(
+    #     answer="",
+    #     model_used="",
+    #     context_injected=False,
+    #     conversation_id=uuid.uuid4(),
+    # )
     if request.conversation_id:
         result = await db.execute(
             select(Conversation).where(
