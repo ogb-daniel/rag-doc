@@ -37,9 +37,9 @@ def generate_secure_api_key() -> str:
 async def create_api_key(
     request: APIKeyCreateRequest, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ) -> APIKeyResponse:
-    raw_key = generate_secure_api_key()
+    raw_key = generate_secure_api_key()[:72]
 
-    hashed_key = pwd_context.hash(raw_key[:72])
+    hashed_key = pwd_context.hash(raw_key)
 
     new_key = APIKey(user_id=current_user.id, name=request.name, key_hash=hashed_key)
 
@@ -57,4 +57,4 @@ async def list_api_keys(
 ) -> list[APIKeyResponse]:
     result = await db.execute(select(APIKey).where(APIKey.user_id == current_user.id, APIKey.is_active))
     keys = result.scalars().all()
-    return [APIKeyResponse(id=str(k.id), name=k.name) for k in keys]
+    return [APIKeyResponse(id=str(k.id), name=k.name, raw_key=k.key_hash) for k in keys]
