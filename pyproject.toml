@@ -36,7 +36,8 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi (>=0.62b1,<0.63)",
     "opentelemetry-exporter-prometheus (>=0.62b1,<0.63)",
     "opentelemetry-exporter-otlp (>=1.41.1,<2.0.0)",
-    "prometheus-client (>=0.25.0,<0.26.0)"
+    "prometheus-client (>=0.25.0,<0.26.0)",
+    "opentelemetry-instrumentation-sqlalchemy (>=0.62b1,<0.63)"
 ]
 
 [tool.poetry]
