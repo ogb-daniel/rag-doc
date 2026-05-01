@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "rag-platform"
+    metrics_path: "/metrics"
+    static_configs:
+      # Port 9464 = OTel's Prometheus exporter server
+      - targets: ["host.docker.internal:9464"]
