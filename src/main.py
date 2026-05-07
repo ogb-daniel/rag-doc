@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import AsyncIterator
 
 from fastapi import FastAPI
 
@@ -26,8 +26,3 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 app.include_router(api_router)
-
-
-@app.get("/health")
-async def health_check() -> dict[str, Any]:
-    return {"status": "healthy", "app": settings.PROJECT_NAME, "database": "checked_in_lifespan"}
