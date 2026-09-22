@@ -101,3 +101,7 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+  qdrant_data:
