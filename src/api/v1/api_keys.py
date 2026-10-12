@@ -1,13 +1,13 @@
 import secrets
 import string
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_current_user
+from src.api.deps import get_auth_user, get_current_user
 from src.core.database import get_db
 from src.models.api_key import APIKey
 from src.models.user import User
@@ -58,3 +58,18 @@ async def list_api_keys(
     result = await db.execute(select(APIKey).where(APIKey.user_id == current_user.id, APIKey.is_active))
     keys = result.scalars().all()
     return [APIKeyResponse(id=str(k.id), name=k.name, raw_key=k.key_hash) for k in keys]
+
+
+@router.delete("/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_api_key(
+    key_id: str, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_auth_user)
+) -> None:
+    from fastapi import HTTPException
+    from sqlalchemy import select
+
+    result = await db.execute(select(APIKey).where(APIKey.id == key_id, APIKey.user_id == current_user.id))
+    key = result.scalar_one_or_none()
+    if not key:
+        raise HTTPException(status_code=404, detail="API Key not found")
+    await db.delete(key)
+    await db.commit()
